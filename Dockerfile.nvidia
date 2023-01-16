@@ -93,3 +93,6 @@ VOLUME [ "/root/.cache" ]
 
 # git cache volume (avoid pulling)
 VOLUME [ "${SDDIR}/repositories" ]
+
+# web gui port
+EXPOSE 7860
