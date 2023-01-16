@@ -49,7 +49,7 @@ Re-run container:
 ---
 
 ```
-$ docker start 
+$ docker start sdwebgui
 ```
 
 Add Models:
