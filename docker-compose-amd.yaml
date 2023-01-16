@@ -1,0 +1,46 @@
+services:
+  sd:
+    image: local/sdwebgui:latest
+    container_name: sdwebgui
+    # networks: # disable to enable networking
+    #   - nointernet # disable to enable networking
+    devices:
+      - "/dev/kfd"
+      - "/dev/dri"
+    group_add: 
+      - video
+    ipc: host
+    cap_add: 
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - type: bind
+        source: "./outputs"
+        target: "/outputs"
+      - type: bind
+        source: "./models"
+        target: "/models"
+      - type: bind
+        source: "./repositories"
+        target: "/app/stable-diffusion-webui/repositories"
+      - type: bind
+        source: "./pip3_cache"
+        target: "/root/.cache"
+    ports:
+      - 8000:7860 # Host:Container
+    # command: conda run -n ldm /bin/bash -c "/app/run-webgui.sh"
+    # interactive bash: docker exec -it NAME bash
+    command: bash --login
+    stdin_open: true
+    tty: true
+
+# volumes
+volumes:
+  sd:
+
+# networks
+networks:
+  nointernet:
+    name: nointernet
+    internal: true

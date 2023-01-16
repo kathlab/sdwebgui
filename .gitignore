@@ -1,0 +1,14 @@
+**/repositories/BLIP
+**/repositories/CodeFormer
+**/repositories/k-diffusion
+**/repositories/stable-diffusion-stability-ai
+**/repositories/taming-transformers
+**/models/*.safetensors
+**/models/*.sha256
+**/models/*.yaml
+**/models/*.ckpt
+**/outputs/*-images
+**/pip3_cache/gdown
+**/pip3_cache/huggingface
+**/pip3_cache/matplotlib
+**/pip3_cache/nvim

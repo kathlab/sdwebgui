@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  sd:
+    image: local/sdwebgui:latest
+    container_name: sdwebgui
+    # networks: # disable to enable networking
+    #   - nointernet # disable to enable networking
+    volumes:
+      - type: bind
+        source: "./outputs"
+        target: "/outputs"
+      - type: bind
+        source: "./models"
+        target: "/models"
+      - type: bind
+        source: "./repositories"
+        target: "/app/stable-diffusion-webui/repositories"
+      - type: bind
+        source: "./pip3_cache"
+        target: "/root/.cache"
+    ports:
+      - 7860:7860 # Host:Container
+    command: /app/run-webgui.sh
+    # command: conda run -n ldm /bin/bash -c "/app/run-webgui.sh"
+    # interactive bash: docker exec -it NAME bash
+    # command: bash --login # let container stay open
+    # stdin_open: true
+    # tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+# volumes
+volumes:
+  sd:
+
+# networks
+networks:
+  nointernet:
+    name: nointernet
+    internal: true

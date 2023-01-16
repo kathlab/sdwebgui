@@ -1,0 +1,95 @@
+# syntax=docker/dockerfile-upstream:master-labs
+FROM ubuntu:jammy
+
+## ARGS
+
+# install packages
+ARG PACKAGES="git mc htop neovim libgl1" # libgl1 mandatory on nvidia gpu
+
+# miniconda
+ARG CONDASETUP=Miniconda3-py310_22.11.1-1-Linux-x86_64.sh
+ARG CONDAURL=https://repo.anaconda.com/miniconda/${CONDASETUP}
+ARG CONDADIR="/miniconda"
+ARG CONDA_PREFIX=${CONDADIR}/envs/${CONDAENV}
+
+# miniconda environment
+ENV PATH=${CONDADIR}/bin:${PATH}
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CONDA_PREFIX}/lib/
+
+# sd
+ARG APPDIR=/app
+ARG MODELDIR=/models
+ARG SDDIR=${APPDIR}/stable-diffusion-webui
+ARG SDMODELDIR=${SDDIR}/models/Stable-diffusion
+ARG OUTPUTSDIR=${SDDIR}/outputs
+
+## install packages
+RUN apt update && apt install -y ${PACKAGES}
+
+## install miniconda
+ADD --checksum=sha256:00938c3534750a0e4069499baf8f4e6dc1c2e471c86a59caa0dd03f4a9269db6 ${CONDAURL} /
+RUN chmod a+x /${CONDASETUP}
+RUN /bin/bash /${CONDASETUP} -b -p ${CONDADIR} # /bin/bash workaround for defect shellscript
+
+## create directories
+
+# app related
+RUN mkdir -p -m 0775 ${APPDIR}
+
+## copy files
+
+# webgui run-script
+COPY assets/scripts/run-webgui.sh ${APPDIR}/run-webgui.sh
+
+# clone automatic1111
+RUN git clone --depth 1 --recursive 'https://github.com/AUTOMATIC1111/stable-diffusion-webui.git' "/app/stable-diffusion-webui"
+
+# copy conda dependency files for generation at build time (not at start-up time)
+# ADD --chown=1000:root assets/environment.yaml ${SDDIR}
+ADD --chown=1000:root assets/cuda.yaml ${SDDIR}
+
+## setup conda environment
+WORKDIR ${SDDIR}
+# RUN conda env create -f environment.yaml
+
+# GPU specific dependencies
+RUN conda env create -f cuda.yaml
+
+# init conda prompt
+RUN conda init bash
+
+# setup default conda environment in containers
+RUN echo 'conda activate sd' >> ~/.bashrc
+
+## let all RUN's after the following line run within the conda environment
+SHELL [ "conda", "run", "-n", "sd", "/bin/bash", "--login", "-c" ]
+
+# update conda to prevent error: No module named '_sysconfigdata_x86_64_conda_linux_gnu'
+RUN ${CONDADIR}/bin/conda update python
+
+# upgrade rocm version of pytorch
+#RUN pip3 install --upgrade torch torchvision --extra-index-url https://download.pytorch.org/whl/rocm5.1.1
+
+# upgrade pip (not mandatory yet)
+# RUN pip3 install --upgrade pip
+
+## setup webgui components
+ENV PYTHONUNBUFFERED=1
+ENV GRADIO_SERVER_NAME=0.0.0.0
+ENV GRADIO_SERVER_PORT=7860
+
+## create volumes
+
+# output files
+RUN ln -s ${OUTPUTSDIR} /outputs
+VOLUME [ "/outputs" ]
+
+# models
+RUN ln -s ${SDMODELDIR} /models
+VOLUME [ "/models" ]
+
+# cache volume (pip3) (avoid pip installs)
+VOLUME [ "/root/.cache" ]
+
+# git cache volume (avoid pulling)
+VOLUME [ "${SDDIR}/repositories" ]
