@@ -31,6 +31,9 @@ ADD --checksum=sha256:00938c3534750a0e4069499baf8f4e6dc1c2e471c86a59caa0dd03f4a9
 RUN chmod a+x /${CONDASETUP}
 RUN /bin/bash /${CONDASETUP} -b -p ${CONDADIR} # /bin/bash workaround for defect shellscript
 
+## update conda if current version is not up-to-date
+RUN conda update -n base -c defaults conda
+
 ## create directories
 
 # app related
@@ -65,7 +68,7 @@ RUN echo 'conda activate sd' >> ~/.bashrc
 SHELL [ "conda", "run", "-n", "sd", "/bin/bash", "--login", "-c" ]
 
 # update conda to prevent error: No module named '_sysconfigdata_x86_64_conda_linux_gnu'
-RUN ${CONDADIR}/bin/conda update python
+# RUN ${CONDADIR}/bin/conda update python
 
 # upgrade rocm version of pytorch
 #RUN pip3 install --upgrade torch torchvision --extra-index-url https://download.pytorch.org/whl/rocm5.1.1
@@ -94,5 +97,5 @@ VOLUME [ "/root/.cache" ]
 # git cache volume (avoid pulling)
 VOLUME [ "${SDDIR}/repositories" ]
 
-# web gui port
-EXPOSE 7860
+# document web gui port
+EXPOSE 7860/tcp
