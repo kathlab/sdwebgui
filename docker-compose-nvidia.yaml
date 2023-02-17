@@ -15,17 +15,17 @@ services:
       - type: bind
         source: "./repositories"
         target: "/app/stable-diffusion-webui/repositories"
-      - type: bind
-        source: "./pip3_cache"
-        target: "/root/.cache"
+      # - type: bind
+      #   source: "./pip3_cache"
+      #   target: "/root/.cache"
     ports:
       - 7860:7860 # Host:Container
-    # command: /app/run-webgui.sh
+    command: /app/run-webgui.sh
     # command: conda run -n ldm /bin/bash -c "/app/run-webgui.sh"
     # interactive bash: docker exec -it NAME bash
-    command: bash --login # let container stay open
-    stdin_open: true
-    tty: true
+    # command: bash --login # let container stay open
+    # stdin_open: true
+    # tty: true
     deploy:
       resources:
         reservations:
