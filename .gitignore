@@ -8,6 +8,7 @@
 **/models/*.yaml
 **/models/*.ckpt
 **/outputs/*-images
+**/outputs/*-grids
 **/pip3_cache/gdown
 **/pip3_cache/huggingface
 **/pip3_cache/matplotlib

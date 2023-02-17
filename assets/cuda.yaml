@@ -49,3 +49,4 @@ dependencies:
     - safetensors
     - psutil; sys_platform == 'darwin'
     - picklescan
+    - fastapi==0.90.1
